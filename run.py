@@ -107,7 +107,7 @@ if args.function == 'pretrain':
 
     train_dataset = dataset.NameDataset(open(args.pretrain_corpus_path, encoding='utf-8').read(), pretrain_dataset)
 
-    tconf = TrainerConfig(max_epochs=650, batch_size=128, learning_rate=6e-3, lr_decay=True, warmup_tokens=512*20, final_tokens=200*len(pretrain_dataset)*block_size, num_workers=0)
+    tconf = TrainerConfig(max_epochs=650, batch_size=128, learning_rate=6e-3, lr_decay=True, warmup_tokens=512*20, final_tokens=200*len(pretrain_dataset)*block_size, num_workers=4)
 
     someTrainer = Trainer(model, train_dataset, None, tconf)
     someTrainer.train()
@@ -163,10 +163,10 @@ elif args.function == 'finetune':
     # 1)
     if args.reading_params_path is None:
         train_dataset = dataset.NameDataset(open(args.finetune_corpus_path, encoding='utf-8').read(), pretrain_dataset)
-        tconf = TrainerConfig(max_epochs=75, batch_size=256, learning_rate=6e-4, lr_decay=True, warmup_tokens=512*20, final_tokens=200*len(train_dataset)*block_size, num_workers=0)
+        tconf = TrainerConfig(max_epochs=75, batch_size=256, learning_rate=6e-4, lr_decay=True, warmup_tokens=512*20, final_tokens=200*len(train_dataset)*block_size, num_workers=4)
     else:
         train_dataset = dataset.NameDataset(open(args.reading_params_path, encoding='utf-8').read(), pretrain_dataset)
-        tconf = TrainerConfig(max_epochs=10, batch_size=256, learning_rate=6e-4, lr_decay=True, warmup_tokens=512*20, final_tokens=200*len(train_dataset)*block_size, num_workers=0)
+        tconf = TrainerConfig(max_epochs=10, batch_size=256, learning_rate=6e-4, lr_decay=True, warmup_tokens=512*20, final_tokens=200*len(train_dataset)*block_size, num_workers=4)
 
     # change the workers back to 4 when you submit
     # 2)
