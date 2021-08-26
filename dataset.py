@@ -201,9 +201,69 @@ class CharCorruptionDataset(Dataset):
         ### [part e]: see spec above
 
         ### START CODE HERE
-        ### END CODE HERE
 
-        raise NotImplementedError
+        import numpy as np
+
+        #0) use index to acquire document
+        document = self.data[idx].split('\t')[0]
+
+        #1) randomly truncate
+        
+        docLen = len(document)
+
+        if docLen > 4:      # if this is already too short, don't truncate
+            endPoint = min(int(self.block_size*7/8), docLen)
+            cutPoint = random.randrange(4, endPoint, 1)
+            truncDoc = document[0:cutPoint]
+        else:
+            truncDoc = document
+
+        truncLen = len(truncDoc)
+
+        #2) break truncated document into 3 sub strings
+
+        # generate a random number between 0 and 1, centered around 1/4
+        while True:
+            midSize = round(np.random.normal(0.25, 0.2)*truncLen)
+            if midSize > 0 and midSize < (truncLen-2):
+                break
+        
+        # figure out where to pull start the midsection at
+        # we can't have our midsection going past the end
+        startPoint = random.randrange(2, truncLen - midSize - 1, 1)
+
+        prefix = truncDoc[0:startPoint]
+        maskedContent = truncDoc[startPoint:(startPoint+midSize)]
+        suffix = truncDoc[(startPoint+midSize):truncLen]
+
+        # print(prefix)
+        # print(maskedContent)
+        # print(suffix)
+
+        # 3) rearrange these substrings into a single masked_string
+
+        # build the initial string
+        masked_string = prefix + self.MASK_CHAR + suffix + self.MASK_CHAR + maskedContent + self.MASK_CHAR
+        maskedLen = len(masked_string)
+
+        # pad this out to the totl block size
+        padsNeeded = self.block_size - maskedLen
+        masked_string = masked_string + padsNeeded*self.PAD_CHAR
+        # print(masked_string)
+
+        # 4) construct the input and output example pair
+
+        x = masked_string
+        y = masked_string[1:self.block_size] + self.PAD_CHAR
+
+        # 5) encode the resulting input and output strings as Long tensors
+
+        x = torch.tensor([self.stoi[c] for c in x], dtype=torch.long)
+        y = torch.tensor([self.stoi[c] for c in y], dtype=torch.long)
+
+        return x, y
+
+        ### END CODE HERE
 
 """
 Code under here is strictly for your debugging purposes; feel free to modify

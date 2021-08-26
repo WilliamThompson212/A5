@@ -101,6 +101,20 @@ if args.function == 'pretrain':
     ###     num_workers=4
 
     ### START CODE HERE
+
+    # 1)
+    from trainer import Trainer, TrainerConfig
+
+    train_dataset = dataset.NameDataset(open(args.pretrain_corpus_path, encoding='utf-8').read(), pretrain_dataset)
+
+    tconf = TrainerConfig(max_epochs=650, batch_size=128, learning_rate=6e-3, lr_decay=True, warmup_tokens=512*20, final_tokens=200*len(pretrain_dataset)*block_size, num_workers=0)
+
+    someTrainer = Trainer(model, train_dataset, None, tconf)
+    someTrainer.train()
+
+    # 2)
+    torch.save(model.state_dict(), args.writing_params_path)   
+
     ### END CODE HERE
     pass
 
@@ -139,15 +153,21 @@ elif args.function == 'finetune':
     ###         num_workers=4
 
     ### START CODE HERE
-    from trainer import Trainer, TrainerConfig
 
-    train_dataset = dataset.NameDataset(open(args.finetune_corpus_path, encoding='utf-8').read(), pretrain_dataset)
+    # LOOK HERE
+    # ok a couple things: need to use torch.load (maybe?) to load in an existing model if there is one
+    # also, make sure to set the number of workers to 4 (on all of these things) before pumping up to the cloud
+
+    from trainer import Trainer, TrainerConfig
 
     # 1)
     if args.reading_params_path is None:
+        train_dataset = dataset.NameDataset(open(args.finetune_corpus_path, encoding='utf-8').read(), pretrain_dataset)
         tconf = TrainerConfig(max_epochs=75, batch_size=256, learning_rate=6e-4, lr_decay=True, warmup_tokens=512*20, final_tokens=200*len(train_dataset)*block_size, num_workers=0)
     else:
+        train_dataset = dataset.NameDataset(open(args.reading_params_path, encoding='utf-8').read(), pretrain_dataset)
         tconf = TrainerConfig(max_epochs=10, batch_size=256, learning_rate=6e-4, lr_decay=True, warmup_tokens=512*20, final_tokens=200*len(train_dataset)*block_size, num_workers=0)
+
     # change the workers back to 4 when you submit
     # 2)
 
